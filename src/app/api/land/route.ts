@@ -1,5 +1,8 @@
 import { logger } from "@/src/logger";
 import { determineSuccess } from "@/src/utils";
+import {trace} from "@opentelemetry/api";
+
+const tracer = trace.getTracer('space-game');
 
 export const POST = async (request: Request) => {
   const data = await request.json();
@@ -9,15 +12,27 @@ export const POST = async (request: Request) => {
   try {
     logger.info(`Landing mission: ${mission.name}`);
 
-    let success = await determineSuccess(mission.steps.at(-1).success);
-    mission.steps.push({ step: "Landing burn", success })
+    let success = mission.steps.at(-1).success;
 
-    logger.info({ success }, 'Landing burn')
+    await tracer.startActiveSpan('Landing burn', async (span) => {
+      try {
+        success = await determineSuccess(success);
+        mission.steps.push({ step: "Landing burn", success })
+        logger.info({ success }, 'Landing burn')
+      } finally {
+        span.end()
+      }
+    });
 
-    success = await determineSuccess(success);
-    mission.steps.push({ step: "Landing", success })
-
-    logger.info({ success }, 'Landing')
+    await tracer.startActiveSpan('Landing', async (span) => {
+      try {
+        success = await determineSuccess(success);
+        mission.steps.push({ step: "Landing", success })
+        logger.info({ success }, 'Landing')
+      } finally {
+        span.end()
+      }
+    });
   } catch (error) {
     logger.error("Mission failed");
   }

@@ -1,31 +1,51 @@
 import { logger } from "@/src/logger";
-import { delay, determineSuccess } from "@/src/utils";
+import { determineSuccess } from "@/src/utils";
+import {trace} from "@opentelemetry/api";
+
+const tracer = trace.getTracer('space-game');
 
 export const POST = async (request: Request) => {
   const data = await request.json();
 
   const mission = {
     name: data.missionName,
-    steps: [] as any[],
+    steps: [] as { step: string, success: number}[],
   }
 
   try {
     logger.info(`Launching mission: ${mission.name}`);
 
-    let success = await determineSuccess(1);
-    mission.steps.push({ step: "Prelaunch checks", success })
+    let success = 1;
 
-    logger.info({ success }, 'Prelaunch checks')
+    await tracer.startActiveSpan('Prelaunch checks', async (span) => {
+      try {
+        success = await determineSuccess(success);
+        mission.steps.push({ step: "Prelaunch checks", success })
+        logger.info({ success }, 'Prelaunch checks')
+      } finally {
+        span.end()
+      }
+    });
 
-    success = await determineSuccess(success);
-    mission.steps.push({ step: "Ignition", success })
+    await tracer.startActiveSpan('Ignition', async (span) => {
+      try {
+        success = await determineSuccess(success);
+        mission.steps.push({ step: "Ignition", success })
+        logger.info({ success }, 'Ignition')
+      } finally {
+        span.end()
+      }
+    });
 
-    logger.info({ success }, 'Ignition')
-
-    success = await determineSuccess(success);
-    mission.steps.push({ step: "Lift off", success })
-
-    logger.info({ success }, 'Lift off')
+    await tracer.startActiveSpan('Lift off', async (span) => {
+      try {
+        success = await determineSuccess(success);
+        mission.steps.push({ step: "Lift off", success })
+        logger.info({ success }, 'Lift off')
+      } finally {
+        span.end()
+      }
+    });
   } catch (error) {
     logger.error("Mission failed");
   }
