@@ -7,7 +7,7 @@ export async function determineSuccess(success: number) {
   const stepSuccess = 0.5 + Math.random() * 0.5
   const newSuccess = stepSuccess * success
 
-  await delay(100)
+  await delay(250)
 
   return newSuccess
 }

@@ -1,4 +1,4 @@
-import { isSpanContextValid, trace } from "@opentelemetry/api";
+import { isSpanContextValid, trace, propagation, context } from "@opentelemetry/api";
 import pino from "pino";
 
 export const logger = pino({
@@ -10,6 +10,7 @@ export const logger = pino({
   },
   mixin() {
     const span = trace.getActiveSpan()?.spanContext()
-    return span && isSpanContextValid(span) ? { traceId: span.traceId, spanId: span.spanId } : {}
+    const missionName = propagation.getBaggage(context.active())?.getEntry("mission-name")?.value
+    return span && isSpanContextValid(span) ? { traceId: span.traceId, spanId: span.spanId, mission: missionName } : {}
   }
 })

@@ -17,44 +17,49 @@ export function Mission() {
       return;
     }
 
-    const missionName = name.trim();
+    const missionName = name.trim().toLowerCase().replace(/\s+/g, "-");
     setError('');
     setStatus('Launching...');
-    gameContext.setMission(previous => ({ ...previous, name: missionName }));
+    gameContext.setMission(previous => ({ ...previous, name: name.trim() }));
 
     try {
-      const traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
+      let traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
       let spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
       console.log("Launching mission", missionName, traceId, spanId);
       const launchResponse = await fetch("/api/launch", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Traceparent": `00-${traceId}-${spanId}-01`
+          "Traceparent": `00-${traceId}-${spanId}-01`,
+          "Baggage": `mission-name=${missionName}`,
         },
         body: JSON.stringify({ missionName })
       });
       const launchData = await launchResponse.json();
 
+      traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
       spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
       console.log("Coasting mission", missionName, traceId, spanId);
       const coastResponse = await fetch("/api/coast", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Traceparent": `00-${traceId}-${spanId}-01`
+          "Traceparent": `00-${traceId}-${spanId}-01`,
+          "Baggage": `mission-name=${missionName}`,
         },
         body: JSON.stringify(launchData)
       });
       const coastData = await coastResponse.json();
 
+      traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
       spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
       console.log("Landing mission", missionName, traceId, spanId);
       const landResponse = await fetch("/api/land", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Traceparent": `00-${traceId}-${spanId}-01`
+          "Traceparent": `00-${traceId}-${spanId}-01`,
+          "Baggage": `mission-name=${missionName}`,
         },
         body: JSON.stringify(coastData)
       });
