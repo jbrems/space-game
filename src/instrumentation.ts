@@ -1,6 +1,7 @@
 import { Resource } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { TreeConsoleSpanProcessor } from "./TreeConsoleSpanProcessor";
+import {NoopSpanProcessor} from "@opentelemetry/sdk-trace-node";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -11,7 +12,8 @@ export async function register() {
         "service.name": "space-game",
         "service.version": "1.0.0",
       }),
-      spanProcessor: new TreeConsoleSpanProcessor(),
+      // spanProcessor: new TreeConsoleSpanProcessor(),
+      spanProcessor: new NoopSpanProcessor(),
     })
 
     sdk.start()

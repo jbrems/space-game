@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { GameContext } from "../app/GameContext";
-import { delay } from "../utils";
+import { delay, randomHexId } from "../utils";
 
 export function Mission() {
   const gameContext = useContext(GameContext);
@@ -23,8 +23,8 @@ export function Mission() {
     gameContext.setMission(previous => ({ ...previous, name: name.trim() }));
 
     try {
-      let traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
-      let spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
+      let traceId = randomHexId(32);
+      let spanId = randomHexId(16);
       console.log("Launching mission", missionName, traceId, spanId);
       const launchResponse = await fetch("/api/launch", {
         method: "POST",
@@ -37,8 +37,8 @@ export function Mission() {
       });
       const launchData = await launchResponse.json();
 
-      traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
-      spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
+      traceId = randomHexId(32);
+      spanId = randomHexId(16);
       console.log("Coasting mission", missionName, traceId, spanId);
       const coastResponse = await fetch("/api/coast", {
         method: "POST",
@@ -51,8 +51,8 @@ export function Mission() {
       });
       const coastData = await coastResponse.json();
 
-      traceId = Math.random().toString(16).substring(2, 34).padStart(32, '0');
-      spanId = Math.random().toString(16).substring(2, 18).padStart(16, '0');
+      traceId = randomHexId(32);
+      spanId = randomHexId(16);
       console.log("Landing mission", missionName, traceId, spanId);
       const landResponse = await fetch("/api/land", {
         method: "POST",
